@@ -14,7 +14,6 @@ import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import com.google.common.util.concurrent.MoreExecutors
 import io.reactivex.disposables.Disposable
@@ -73,7 +72,6 @@ class SettingsFragmentVersion : Fragment() {
   private lateinit var showErrorButton: Button
   private lateinit var showTesting: Switch
   private lateinit var syncAccountsButton: Button
-  private lateinit var toolbar: Toolbar
   private lateinit var uiThread: UIThreadServiceType
   private lateinit var versionText: TextView
   private lateinit var versionTitle: TextView
