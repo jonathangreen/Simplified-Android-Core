@@ -255,7 +255,7 @@ class CatalogFragmentBookDetail : Fragment() {
 
     this.onBookChangedUI(status)
     this.onOPDSFeedEntryUI(this.parameters.feedEntry)
-    this.configureToolbar(this.requireActivity())
+    this.configureToolbar()
 
     this.bookRegistrySubscription =
       this.bookRegistry.bookEvents()
@@ -278,10 +278,7 @@ class CatalogFragmentBookDetail : Fragment() {
     return BookWithStatus(book, status)
   }
 
-  private fun configureToolbar(activity: Activity) {
-    val feedTitle =
-      this.parameters.feedEntry.feedEntry.title
-
+  private fun configureToolbar() {
     val accountProvider = try {
       this.profilesController.profileCurrent()
         .account(this.parameters.feedEntry.accountID)
@@ -291,6 +288,7 @@ class CatalogFragmentBookDetail : Fragment() {
       null
     }
 
+    val feedTitle = this.parameters.feedArguments.title
     this.supportActionBar?.apply {
       title = feedTitle
       subtitle = accountProvider?.displayName
