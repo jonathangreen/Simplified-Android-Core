@@ -1,5 +1,6 @@
 package org.nypl.simplified.ui.settings
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -39,7 +40,6 @@ import org.nypl.simplified.taskrecorder.api.TaskStep
 import org.nypl.simplified.taskrecorder.api.TaskStepResolution
 import org.nypl.simplified.ui.errorpage.ErrorPageParameters
 import org.nypl.simplified.ui.thread.api.UIThreadServiceType
-import org.nypl.simplified.ui.toolbar.ToolbarHostType
 import org.slf4j.LoggerFactory
 
 /**
@@ -155,8 +155,7 @@ class SettingsFragmentVersion : Fragment() {
 
   override fun onStart() {
     super.onStart()
-
-    this.configureToolbar()
+    this.configureToolbar(this.requireActivity())
 
     this.buildTitle.setOnClickListener {
       if (this.buildClicks >= 7) {
@@ -336,24 +335,10 @@ class SettingsFragmentVersion : Fragment() {
     }
   }
 
-  private fun configureToolbar() {
-    val host = this.activity
-    if (host is ToolbarHostType) {
-      host.toolbarClearMenu()
-      host.toolbarSetTitleSubtitle(
-        title = this.requireContext().getString(R.string.settingsVersion),
-        subtitle = ""
-      )
-      host.toolbarSetBackArrowConditionally(
-        context = host,
-        shouldArrowBePresent = {
-          this.findNavigationController().backStackSize() > 1
-        },
-        onArrowClicked = {
-          this.findNavigationController().popBackStack()
-        })
-    } else {
-      throw IllegalStateException("The activity ($host) hosting this fragment must implement ${ToolbarHostType::class.java}")
+  private fun configureToolbar(activity: Activity) {
+    activity.actionBar?.apply {
+      title = getString(R.string.settingsVersion)
+      subtitle = null
     }
   }
 

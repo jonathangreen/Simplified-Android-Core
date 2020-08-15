@@ -1,5 +1,6 @@
 package org.nypl.simplified.ui.accounts
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,7 +31,6 @@ import org.nypl.simplified.threads.NamedThreadPools
 import org.nypl.simplified.ui.errorpage.ErrorPageParameters
 import org.nypl.simplified.ui.images.ImageLoaderType
 import org.nypl.simplified.ui.thread.api.UIThreadServiceType
-import org.nypl.simplified.ui.toolbar.ToolbarHostType
 import org.slf4j.LoggerFactory
 
 /**
@@ -215,13 +215,9 @@ class AccountRegistryFragment : Fragment() {
     return layout
   }
 
-  override fun onActivityCreated(savedInstanceState: Bundle?) {
-    super.onActivityCreated(savedInstanceState)
-    this.configureToolbar()
-  }
-
   override fun onStart() {
     super.onStart()
+    this.configureToolbar(this.requireActivity())
 
     this.backgroundExecutor =
       NamedThreadPools.namedThreadPool(1, "simplified-registry-io", 19)
@@ -249,24 +245,10 @@ class AccountRegistryFragment : Fragment() {
     }
   }
 
-  private fun configureToolbar() {
-    val host = this.activity
-    if (host is ToolbarHostType) {
-      host.toolbarClearMenu()
-      host.toolbarSetTitleSubtitle(
-        title = this.requireContext().getString(R.string.accountAdd),
-        subtitle = ""
-      )
-      host.toolbarSetBackArrowConditionally(
-        context = host,
-        shouldArrowBePresent = {
-          this.navigationController.backStackSize() > 1
-        },
-        onArrowClicked = {
-          this.navigationController.popBackStack()
-        })
-    } else {
-      throw IllegalStateException("The activity ($host) hosting this fragment must implement ${ToolbarHostType::class.java}")
+  private fun configureToolbar(activity: Activity) {
+    activity.actionBar?.apply {
+      title = getString(R.string.accountAdd)
+      subtitle = null
     }
   }
 

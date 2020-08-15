@@ -25,6 +25,10 @@ open class AccountNavigationControllerUnreachable : AccountNavigationControllerT
     throw UnreachableCodeException()
   }
 
+  override fun popToRoot(): Boolean {
+    throw UnreachableCodeException()
+  }
+
   override fun backStackSize(): Int {
     throw UnreachableCodeException()
   }

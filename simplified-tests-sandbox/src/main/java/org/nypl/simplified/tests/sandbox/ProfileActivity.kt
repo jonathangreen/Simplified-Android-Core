@@ -1,7 +1,6 @@
 package org.nypl.simplified.tests.sandbox
 
 import android.os.Bundle
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.FragmentActivity
 import org.librarysimplified.services.api.ServiceDirectory
 import org.librarysimplified.services.api.ServiceDirectoryType
@@ -15,19 +14,13 @@ import org.nypl.simplified.ui.profiles.ProfileModificationFragmentParameters
 import org.nypl.simplified.ui.profiles.ProfileSelectionFragment
 import org.nypl.simplified.ui.profiles.ProfilesNavigationControllerType
 import org.nypl.simplified.ui.thread.api.UIThreadServiceType
-import org.nypl.simplified.ui.toolbar.ToolbarHostType
 
-class ProfileActivity : FragmentActivity(), ToolbarHostType {
-
-  private lateinit var toolbar: Toolbar
+class ProfileActivity : FragmentActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     this.setContentView(R.layout.profile_host)
-
-    this.toolbar = this.findViewById(R.id.toolbar)
-    this.toolbar.title = "Profiles"
 
     if (savedInstanceState == null) {
       Services.initialize(createServices())
@@ -65,6 +58,10 @@ class ProfileActivity : FragmentActivity(), ToolbarHostType {
               return true
             }
 
+            override fun popToRoot(): Boolean {
+              TODO("not implemented")
+            }
+
             override fun backStackSize(): Int {
               return 1
             }
@@ -81,9 +78,5 @@ class ProfileActivity : FragmentActivity(), ToolbarHostType {
     services.addService(UIThreadServiceType::class.java, object : UIThreadServiceType {})
     services.addService(ProfilesControllerType::class.java, MockProfilesController(16, 3))
     return services.build()
-  }
-
-  override fun findToolbar(): Toolbar {
-    return this.toolbar
   }
 }

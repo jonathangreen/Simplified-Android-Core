@@ -1,5 +1,6 @@
 package org.nypl.simplified.ui.settings
 
+import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.preference.Preference
@@ -9,7 +10,6 @@ import org.librarysimplified.services.api.Services
 import org.nypl.simplified.buildconfig.api.BuildConfigurationServiceType
 import org.nypl.simplified.documents.store.DocumentStoreType
 import org.nypl.simplified.navigation.api.NavigationControllers
-import org.nypl.simplified.ui.toolbar.ToolbarHostType
 
 /**
  * The main settings page containing links to other settings pages.
@@ -59,23 +59,13 @@ class SettingsFragmentMain : PreferenceFragmentCompat() {
 
   override fun onStart() {
     super.onStart()
-    this.configureToolbar()
+    this.configureToolbar(this.requireActivity())
   }
 
-  private fun configureToolbar() {
-    val host = this.activity
-    if (host is ToolbarHostType) {
-      host.toolbarClearMenu()
-      host.toolbarSetTitleSubtitle(
-        title = this.requireContext().getString(R.string.settings),
-        subtitle = ""
-      )
-      host.toolbarSetBackArrowConditionally(
-        context = host,
-        shouldArrowBePresent = { this.findNavigationController().backStackSize() > 1 },
-        onArrowClicked = { this.findNavigationController().popBackStack() })
-    } else {
-      throw IllegalStateException("The activity ($host) hosting this fragment must implement ${ToolbarHostType::class.java}")
+  private fun configureToolbar(activity: Activity) {
+    activity.actionBar?.apply {
+      title = getString(R.string.settings)
+      subtitle = null
     }
   }
 

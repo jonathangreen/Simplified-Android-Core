@@ -2,7 +2,6 @@ package org.nypl.simplified.tests.sandbox
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import io.reactivex.subjects.PublishSubject
 import org.librarysimplified.services.api.ServiceDirectoryProviderType
@@ -42,13 +41,12 @@ import org.nypl.simplified.ui.screen.ScreenSizeInformation
 import org.nypl.simplified.ui.screen.ScreenSizeInformationType
 import org.nypl.simplified.ui.accounts.AccountFragmentParameters
 import org.nypl.simplified.ui.thread.api.UIThreadServiceType
-import org.nypl.simplified.ui.toolbar.ToolbarHostType
 import java.io.IOException
 import java.net.URI
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.SECONDS
 
-class SettingsAccountActivity : AppCompatActivity(), ServiceDirectoryProviderType, ToolbarHostType {
+class SettingsAccountActivity : AppCompatActivity(), ServiceDirectoryProviderType {
 
   private lateinit var accountEvents: PublishSubject<AccountEvent>
   private lateinit var account: MockAccount
@@ -246,13 +244,5 @@ class SettingsAccountActivity : AppCompatActivity(), ServiceDirectoryProviderTyp
       )
       this.stateIndex = (this.stateIndex + 1) % this.states.size
     }
-  }
-
-  override fun onStop() {
-    super.onStop()
-  }
-
-  override fun findToolbar(): Toolbar {
-    return this.findViewById(R.id.toolbar)
   }
 }
