@@ -10,11 +10,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentManager.OnBackStackChangedListener
 import androidx.lifecycle.ViewModelProviders
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.ListeningScheduledExecutorService
 import com.io7m.jfunctional.Some
+import com.io7m.junreachable.UnreachableCodeException
 import io.reactivex.Observable
 import org.librarysimplified.services.api.Services
 import org.nypl.simplified.accounts.api.AccountAuthenticationCredentials
@@ -49,8 +51,8 @@ import org.nypl.simplified.reports.Reports
 import org.nypl.simplified.taskrecorder.api.TaskRecorder
 import org.nypl.simplified.taskrecorder.api.TaskResult
 import org.nypl.simplified.threads.NamedThreadPools
+import org.nypl.simplified.ui.accounts.AccountFragmentParameters
 import org.nypl.simplified.ui.accounts.AccountNavigationControllerType
-import org.nypl.simplified.ui.accounts.AccountNavigationControllerUnreachable
 import org.nypl.simplified.ui.accounts.AccountRegistryFragment
 import org.nypl.simplified.ui.branding.BrandingSplashServiceType
 import org.nypl.simplified.ui.catalog.CatalogNavigationControllerType
@@ -71,6 +73,7 @@ import java.util.ServiceLoader
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity(),
+  OnBackStackChangedListener,
   SplashListenerType,
   ErrorPageListenerType {
 
@@ -88,6 +91,9 @@ class MainActivity : AppCompatActivity(),
       val controllers = arrayListOf(
         this.navigationControllerDirectory.navigationControllerIfAvailable(
           CatalogNavigationControllerType::class.java
+        ),
+        this.navigationControllerDirectory.navigationControllerIfAvailable(
+          AccountNavigationControllerType::class.java
         ),
         this.navigationControllerDirectory.navigationControllerIfAvailable(
           SettingsNavigationControllerType::class.java
@@ -209,11 +215,10 @@ class MainActivity : AppCompatActivity(),
   private fun showSplashScreen() {
     this.logger.debug("showSplashScreen")
 
-    val splashMainFragment = SplashFragment.newInstance(getSplashParams())
-
+    val splashFragment = SplashFragment.newInstance(getSplashParams())
     this.supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
     this.supportFragmentManager.beginTransaction()
-      .replace(R.id.mainFragmentHolder, splashMainFragment, "SPLASH_MAIN")
+      .replace(R.id.mainFragmentHolder, splashFragment, "SPLASH_MAIN")
       .commit()
   }
 
@@ -227,6 +232,9 @@ class MainActivity : AppCompatActivity(),
     val accountProviders =
       services.requireService(AccountProviderRegistryType::class.java)
     val splashService = getSplashService()
+
+    this.navigationControllerDirectory.removeNavigationController(
+      AccountNavigationControllerType::class.java)
 
     return when (profilesController.profileAnonymousEnabled()) {
       ANONYMOUS_PROFILE_ENABLED -> {
@@ -260,6 +268,7 @@ class MainActivity : AppCompatActivity(),
     this.supportFragmentManager.beginTransaction()
       .replace(R.id.mainFragmentHolder, fragment, "SPLASH_MAIN")
       .commit()
+    this.supportActionBar?.hide()
   }
 
   private fun openProfileScreen() {
@@ -270,6 +279,7 @@ class MainActivity : AppCompatActivity(),
     this.supportFragmentManager.beginTransaction()
       .replace(R.id.mainFragmentHolder, profilesFragment, "MAIN")
       .commit()
+    this.supportActionBar?.hide()
   }
 
   private fun openCatalog() {
@@ -286,6 +296,7 @@ class MainActivity : AppCompatActivity(),
     this.supportFragmentManager.beginTransaction()
       .replace(R.id.mainFragmentHolder, mainFragment, "MAIN")
       .commit()
+    supportActionBar?.show()
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -298,8 +309,12 @@ class MainActivity : AppCompatActivity(),
 
     val toolbar = this.findViewById(R.id.mainToolbar) as Toolbar
     this.setSupportActionBar(toolbar)
-    supportActionBar?.setDisplayHomeAsUpEnabled(true)
-    supportActionBar?.setDisplayShowHomeEnabled(true)
+    this.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    this.supportActionBar?.setDisplayShowHomeEnabled(true)
+    this.supportActionBar?.hide() // Hide toolbar until requested
+
+    this.supportFragmentManager
+      .addOnBackStackChangedListener(this)
 
     this.mainViewModel =
       ViewModelProviders.of(this)
@@ -332,6 +347,13 @@ class MainActivity : AppCompatActivity(),
 
     this.logger.debug("delivering back press to activity")
     super.onBackPressed()
+  }
+
+  override fun onBackStackChanged() {
+    this.navigationController?.let { controller ->
+      val showHomeAction = controller.backStackSize() > 1
+      this.supportActionBar?.setDisplayShowHomeEnabled(showHomeAction)
+    }
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -421,7 +443,7 @@ class MainActivity : AppCompatActivity(),
   }
 
   override fun onSplashLibrarySelectionWanted() {
-    val manager = this.supportFragmentManager
+    val fm = this.supportFragmentManager
 
     /*
      * Set up a custom navigation controller used by the settings library registry screen. It's
@@ -430,31 +452,48 @@ class MainActivity : AppCompatActivity(),
 
     this.navigationControllerDirectory.updateNavigationController(
       AccountNavigationControllerType::class.java,
-      object : AccountNavigationControllerUnreachable() {
+      object : AccountNavigationControllerType {
         override fun popBackStack(): Boolean {
-          onStartupFinished()
+          this@MainActivity.onStartupFinished()
           return true
         }
 
         override fun popToRoot(): Boolean {
-          TODO("not implemented")
+          this@MainActivity.onStartupFinished()
+          return true
+        }
+
+        override fun backStackSize(): Int {
+          // Note: Little hack to get the Toolbar to display correctly.
+          return fm.backStackEntryCount + 1
+        }
+
+        override fun openSettingsAccount(parameters: AccountFragmentParameters) {
+          throw UnreachableCodeException()
+        }
+
+        override fun openSettingsAccountRegistry() {
+          throw UnreachableCodeException()
         }
 
         override fun <E : PresentableErrorType> openErrorPage(
           parameters: ErrorPageParameters<E>
         ) {
-          val errorPage = ErrorPageFragment.create(parameters)
-          manager.beginTransaction()
-            .replace(R.id.mainFragmentHolder, errorPage, "MAIN")
+          val fragment = ErrorPageFragment.create(parameters)
+          fm.beginTransaction()
+            .replace(R.id.mainFragmentHolder, fragment, "MAIN")
+            .addToBackStack(null)
             .commit()
         }
       }
     )
 
-    manager.beginTransaction()
-      .replace(R.id.mainFragmentHolder, AccountRegistryFragment(), "MAIN")
+    val fragment = AccountRegistryFragment()
+    fm.beginTransaction()
+      .replace(R.id.mainFragmentHolder, fragment, "MAIN")
       .addToBackStack(null)
       .commit()
+    this.supportActionBar?.show()
   }
 
   override fun onSplashLibrarySelectionNotWanted() {
