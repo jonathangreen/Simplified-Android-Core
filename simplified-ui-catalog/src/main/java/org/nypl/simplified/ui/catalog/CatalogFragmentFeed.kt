@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.View.TEXT_ALIGNMENT_TEXT_END
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.RadioButton
@@ -330,7 +331,7 @@ class CatalogFragmentFeed : Fragment() {
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     return when (item.itemId) {
-      R.id.catalogMenuActionReload -> {
+      R.id.catalogMenuActionSearch -> {
         this.feedModel.feedState().search?.let { search ->
           this.openSearchDialog(requireContext(), search)
         }
@@ -700,7 +701,7 @@ class CatalogFragmentFeed : Fragment() {
       }
       is FeedLoaderFailedAuthentication -> {
         when (val ownership = this.parameters.ownership) {
-          is CatalogFeedOwnership.OwnedByAccount -> {
+          is OwnedByAccount -> {
 
             /*
              * Explicitly deferring the opening of the fragment is required due to the
@@ -718,7 +719,7 @@ class CatalogFragmentFeed : Fragment() {
                 ))
             }
           }
-          CatalogFeedOwnership.CollectedFromAccounts -> {
+          CollectedFromAccounts -> {
             // Nothing we can do here! We don't know which account owns the feed.
           }
         }
@@ -852,20 +853,40 @@ class CatalogFragmentFeed : Fragment() {
     context: Context,
     search: FeedSearch
   ) {
-    AlertDialog.Builder(context).apply {
-      setView(R.layout.search_dialog)
-      setTitle(R.string.catalogSearch)
-      setPositiveButton(R.string.catalogSearch) { dialog, _ ->
-        val tv: TextView = (dialog as AlertDialog).findViewById(R.id.searchDialogText)!!
-        val query = tv.text.toString().trim()
+    val view = LayoutInflater.from(context).inflate(R.layout.search_dialog, null)
+    val searchView = view.findViewById<TextView>(R.id.searchDialogText)!!
 
-        this@CatalogFragmentFeed.logSearchToAnalytics(query)
-        this@CatalogFragmentFeed.navigationController.openFeed(
-          this@CatalogFragmentFeed.feedModel.resolveSearch(search, query)
-        )
+    fun performSearch(searchView: TextView) {
+      val query = searchView.text.toString().trim()
+      this@CatalogFragmentFeed.logSearchToAnalytics(query)
+      this@CatalogFragmentFeed.navigationController.openFeed(
+        this@CatalogFragmentFeed.feedModel.resolveSearch(search, query)
+      )
+    }
+
+    val builder = AlertDialog.Builder(context).apply {
+      setPositiveButton(R.string.catalogSearch) { dialog, _ ->
+        performSearch(searchView)
         dialog.dismiss()
       }
-    }.create().show()
+      setNegativeButton(R.string.cancel) { dialog, _ ->
+        dialog.dismiss()
+      }
+      setView(view)
+    }
+
+    val dialog = builder.create()
+    searchView.setOnEditorActionListener { _, actionId, _ ->
+      return@setOnEditorActionListener when (actionId) {
+        EditorInfo.IME_ACTION_SEARCH -> {
+          performSearch(searchView)
+          dialog.dismiss()
+          true
+        }
+        else -> false
+      }
+    }
+    dialog.show()
   }
 
   private fun logSearchToAnalytics(query: String) {
@@ -873,8 +894,8 @@ class CatalogFragmentFeed : Fragment() {
       val profile = this.profilesController.profileCurrent()
       val accountId =
         when (val ownership = this.parameters.ownership) {
-          is CatalogFeedOwnership.OwnedByAccount -> ownership.accountId
-          is CatalogFeedOwnership.CollectedFromAccounts -> null
+          is OwnedByAccount -> ownership.accountId
+          is CollectedFromAccounts -> null
         }
 
       if (accountId != null) {
