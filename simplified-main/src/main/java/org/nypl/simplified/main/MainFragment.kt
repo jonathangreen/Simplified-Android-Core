@@ -161,7 +161,6 @@ class MainFragment : Fragment() {
 
   override fun onStart() {
     super.onStart()
-    this.requireActivity().actionBar?.hide()
 
     this.uiThread.runOnUIThread {
       this.navigationControllerDirectory.updateNavigationController(

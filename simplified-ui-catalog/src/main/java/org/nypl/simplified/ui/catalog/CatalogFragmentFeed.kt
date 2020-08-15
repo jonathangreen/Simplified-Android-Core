@@ -1,6 +1,6 @@
 package org.nypl.simplified.ui.catalog
 
-import android.app.Activity
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
@@ -26,7 +26,6 @@ import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -42,6 +41,7 @@ import org.nypl.simplified.accounts.api.AccountEventDeletion
 import org.nypl.simplified.accounts.api.AccountProviderType
 import org.nypl.simplified.analytics.api.AnalyticsEvent
 import org.nypl.simplified.analytics.api.AnalyticsType
+import org.nypl.simplified.android.ktx.supportActionBar
 import org.nypl.simplified.books.book_registry.BookRegistryReadableType
 import org.nypl.simplified.books.covers.BookCoverProviderType
 import org.nypl.simplified.buildconfig.api.BuildConfigurationServiceType
@@ -419,19 +419,19 @@ class CatalogFragmentFeed : Fragment() {
 
     return when (feedState) {
       is CatalogFeedAgeGate ->
-        this.onCatalogFeedAgeGateUI(activity, feedState)
+        this.onCatalogFeedAgeGateUI(feedState)
       is CatalogFeedLoading ->
-        this.onCatalogFeedLoadingUI(activity, feedState)
+        this.onCatalogFeedLoadingUI(feedState)
       is CatalogFeedWithGroups ->
-        this.onCatalogFeedWithGroupsUI(activity, feedState)
+        this.onCatalogFeedWithGroupsUI(feedState)
       is CatalogFeedWithoutGroups ->
-        this.onCatalogFeedWithoutGroupsUI(activity, feedState)
+        this.onCatalogFeedWithoutGroupsUI(feedState)
       is CatalogFeedNavigation ->
-        this.onCatalogFeedNavigationUI(activity, feedState)
+        this.onCatalogFeedNavigationUI(feedState)
       is CatalogFeedLoadFailed ->
-        this.onCatalogFeedLoadFailed(activity, feedState)
+        this.onCatalogFeedLoadFailed(feedState)
       is CatalogFeedEmpty ->
-        this.onCatalogFeedEmpty(activity, feedState)
+        this.onCatalogFeedEmpty(feedState)
     }
   }
 
@@ -460,8 +460,7 @@ class CatalogFragmentFeed : Fragment() {
 
   @UiThread
   private fun onCatalogFeedAgeGateUI(
-    activity: FragmentActivity,
-    feedState: CatalogFeedAgeGate
+    @Suppress("UNUSED_PARAMETER") feedState: CatalogFeedAgeGate
   ) {
     this.uiThread.checkIsUIThread()
 
@@ -473,11 +472,7 @@ class CatalogFragmentFeed : Fragment() {
     this.feedWithGroups.visibility = View.INVISIBLE
     this.feedWithoutGroups.visibility = View.INVISIBLE
 
-    this.configureToolbar(
-      activity = activity,
-      title = feedState.title,
-      ownership = feedState.arguments.ownership
-    )
+    this.configureToolbar()
 
     this.feedCOPPAOver13.setOnClickListener {
       this.feedCOPPAUnder13.isEnabled = false
@@ -537,8 +532,7 @@ class CatalogFragmentFeed : Fragment() {
 
   @UiThread
   private fun onCatalogFeedEmpty(
-    activity: FragmentActivity,
-    feedState: CatalogFeedEmpty
+    @Suppress("UNUSED_PARAMETER") feedState: CatalogFeedEmpty
   ) {
     this.uiThread.checkIsUIThread()
 
@@ -550,17 +544,12 @@ class CatalogFragmentFeed : Fragment() {
     this.feedWithGroups.visibility = View.INVISIBLE
     this.feedWithoutGroups.visibility = View.INVISIBLE
 
-    this.configureToolbar(
-      activity = activity,
-      title = feedState.title,
-      ownership = feedState.arguments.ownership
-    )
+    this.configureToolbar()
   }
 
   @UiThread
   private fun onCatalogFeedLoadingUI(
-    activity: FragmentActivity,
-    feedState: CatalogFeedLoading
+    @Suppress("UNUSED_PARAMETER") feedState: CatalogFeedLoading
   ) {
     this.uiThread.checkIsUIThread()
 
@@ -572,17 +561,12 @@ class CatalogFragmentFeed : Fragment() {
     this.feedWithGroups.visibility = View.INVISIBLE
     this.feedWithoutGroups.visibility = View.INVISIBLE
 
-    this.configureToolbar(
-      activity = activity,
-      title = feedState.title,
-      ownership = feedState.arguments.ownership
-    )
+    this.configureToolbar()
   }
 
   @UiThread
   private fun onCatalogFeedNavigationUI(
-    activity: FragmentActivity,
-    feedState: CatalogFeedNavigation
+    @Suppress("UNUSED_PARAMETER") feedState: CatalogFeedNavigation
   ) {
     this.uiThread.checkIsUIThread()
 
@@ -594,16 +578,11 @@ class CatalogFragmentFeed : Fragment() {
     this.feedWithGroups.visibility = View.INVISIBLE
     this.feedWithoutGroups.visibility = View.INVISIBLE
 
-    this.configureToolbar(
-      activity = activity,
-      title = feedState.title,
-      ownership = feedState.arguments.ownership
-    )
+    this.configureToolbar()
   }
 
   @UiThread
   private fun onCatalogFeedWithoutGroupsUI(
-    activity: FragmentActivity,
     feedState: CatalogFeedWithoutGroups
   ) {
     this.uiThread.checkIsUIThread()
@@ -616,11 +595,7 @@ class CatalogFragmentFeed : Fragment() {
     this.feedWithGroups.visibility = View.INVISIBLE
     this.feedWithoutGroups.visibility = View.VISIBLE
 
-    this.configureToolbar(
-      activity = activity,
-      title = feedState.title,
-      ownership = feedState.arguments.ownership
-    )
+    this.configureToolbar()
 
     this.configureFacets(
       facetHeader = this.feedWithoutGroupsHeader,
@@ -634,7 +609,7 @@ class CatalogFragmentFeed : Fragment() {
       CatalogPagedAdapter(
         borrowViewModel = this.borrowViewModel,
         buttonCreator = this.buttonCreator,
-        context = activity,
+        context = requireActivity(),
         navigation = this::navigationController,
         onBookSelected = this::onBookSelected,
         services = Services.serviceDirectory(),
@@ -648,10 +623,8 @@ class CatalogFragmentFeed : Fragment() {
     })
   }
 
-  @Suppress("UNUSED_PARAMETER")
   @UiThread
   private fun onCatalogFeedWithGroupsUI(
-    activity: FragmentActivity,
     feedState: CatalogFeedWithGroups
   ) {
     this.uiThread.checkIsUIThread()
@@ -664,11 +637,7 @@ class CatalogFragmentFeed : Fragment() {
     this.feedWithGroups.visibility = View.VISIBLE
     this.feedWithoutGroups.visibility = View.INVISIBLE
 
-    this.configureToolbar(
-      activity = activity,
-      title = feedState.title,
-      ownership = feedState.arguments.ownership
-    )
+    this.configureToolbar()
 
     this.configureFacets(
       facetHeader = this.feedWithGroupsHeader,
@@ -685,7 +654,6 @@ class CatalogFragmentFeed : Fragment() {
 
   @UiThread
   private fun onCatalogFeedLoadFailed(
-    activity: FragmentActivity,
     feedState: CatalogFeedLoadFailed
   ) {
     this.uiThread.checkIsUIThread()
@@ -734,11 +702,7 @@ class CatalogFragmentFeed : Fragment() {
     this.feedWithGroups.visibility = View.INVISIBLE
     this.feedWithoutGroups.visibility = View.INVISIBLE
 
-    this.configureToolbar(
-      activity = activity,
-      title = feedState.title,
-      ownership = feedState.arguments.ownership
-    )
+    this.configureToolbar()
 
     this.feedErrorRetry.isEnabled = true
     this.feedErrorRetry.setOnClickListener { button ->
@@ -754,79 +718,74 @@ class CatalogFragmentFeed : Fragment() {
   }
 
   @UiThread
-  private fun configureToolbar(
-    activity: Activity,
-    ownership: CatalogFeedOwnership,
-    title: String
-  ) {
-    this.configureToolbarNavigation(activity, ownership)
-    this.configureToolbarTitles(activity, ownership, title)
+  private fun configureToolbar() {
+    this.configureToolbarNavigation()
+    this.configureToolbarTitles()
   }
 
   @UiThread
-  private fun configureToolbarNavigation(
-    activity: Activity,
-    ownership: CatalogFeedOwnership
-  ) {
-    try {
-      val isRoot = (1 == this.navigationController.backStackSize())
+  private fun configureToolbarNavigation() {
 
-      // Configure the 'Home Action' in the Toolbar to show the account picker when tapped.
-      if (isRoot) {
-        when (ownership) {
-          is OwnedByAccount -> {
-            activity.actionBar?.apply {
-              setHomeAsUpIndicator(R.drawable.accounts)
-              setHomeActionContentDescription(R.string.catalogAccounts)
-            }
-          }
-        }
-      } else {
-        // Reset the 'Home Action' to default values.
-        activity.actionBar?.apply {
-          setHomeAsUpIndicator(null)
-          setHomeActionContentDescription(null)
-        }
-      }
-    } catch (e: Exception) {
+    fun resetHomeAction() {
       // Reset the 'Home Action' to default values.
-      activity.actionBar?.apply {
+      this.supportActionBar?.apply {
         setHomeAsUpIndicator(null)
         setHomeActionContentDescription(null)
       }
     }
+
+    fun showAccountPickerAction() {
+      // Configure the 'Home Action' in the Toolbar to show the account picker when tapped.
+      this.supportActionBar?.apply {
+        setHomeAsUpIndicator(R.drawable.accounts)
+        setHomeActionContentDescription(R.string.catalogAccounts)
+      }
+    }
+
+    try {
+      val isRoot =
+        (1 == this.navigationController.backStackSize())
+      if (isRoot) {
+        when (this.parameters.ownership) {
+          is OwnedByAccount -> showAccountPickerAction()
+          is CollectedFromAccounts -> resetHomeAction()
+        }
+      } else {
+        resetHomeAction()
+      }
+    } catch (e: Exception) {
+      resetHomeAction()
+    }
   }
 
   @UiThread
-  private fun configureToolbarTitles(
-    activity: Activity,
-    ownership: CatalogFeedOwnership,
-    title: String
-  ) {
+  private fun configureToolbarTitles() {
     try {
-      when (ownership) {
+      when (val ownership = this.parameters.ownership) {
         is OwnedByAccount -> {
           val accountProvider =
             this.profilesController.profileCurrent()
               .account(ownership.accountId)
               .provider
 
-          activity.actionBar?.title = when {
-            title.isBlank() || accountProvider.displayName == title -> {
-              this@CatalogFragmentFeed.parameters.title
-            }
-            else -> title
+          this.supportActionBar?.apply {
+            title = this@CatalogFragmentFeed.parameters.title
+            subtitle = accountProvider.displayName
           }
-          activity.actionBar?.subtitle = accountProvider.displayName
         }
 
         is CollectedFromAccounts -> {
-          activity.actionBar?.title = title
-          activity.actionBar?.subtitle = null
+          this.supportActionBar?.apply {
+            title = this@CatalogFragmentFeed.parameters.title
+            subtitle = null
+          }
         }
       }
     } catch (e: Exception) {
-      // TODO
+      this.supportActionBar?.apply {
+        title = this@CatalogFragmentFeed.parameters.title
+        subtitle = null
+      }
     }
   }
 
@@ -848,6 +807,7 @@ class CatalogFragmentFeed : Fragment() {
     }
   }
 
+  @SuppressLint("InflateParams")
   @UiThread
   private fun openSearchDialog(
     context: Context,

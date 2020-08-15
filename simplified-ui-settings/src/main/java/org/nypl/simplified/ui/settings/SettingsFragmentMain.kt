@@ -7,6 +7,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.io7m.jfunctional.Some
 import org.librarysimplified.services.api.Services
+import org.nypl.simplified.android.ktx.supportActionBar
 import org.nypl.simplified.buildconfig.api.BuildConfigurationServiceType
 import org.nypl.simplified.documents.store.DocumentStoreType
 import org.nypl.simplified.navigation.api.NavigationControllers
@@ -63,7 +64,7 @@ class SettingsFragmentMain : PreferenceFragmentCompat() {
   }
 
   private fun configureToolbar(activity: Activity) {
-    activity.actionBar?.apply {
+    this.supportActionBar?.apply {
       title = getString(R.string.settings)
       subtitle = null
     }
