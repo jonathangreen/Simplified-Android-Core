@@ -726,11 +726,12 @@ class CatalogFragmentFeed : Fragment() {
   @UiThread
   private fun configureToolbarNavigation() {
 
-    fun resetHomeAction() {
+    fun resetHomeAction(isVisible: Boolean) {
       // Reset the 'Home Action' to default values.
       this.supportActionBar?.apply {
         setHomeAsUpIndicator(null)
         setHomeActionContentDescription(null)
+        setDisplayHomeAsUpEnabled(isVisible)
       }
     }
 
@@ -739,6 +740,7 @@ class CatalogFragmentFeed : Fragment() {
       this.supportActionBar?.apply {
         setHomeAsUpIndicator(R.drawable.accounts)
         setHomeActionContentDescription(R.string.catalogAccounts)
+        setDisplayHomeAsUpEnabled(true)
       }
     }
 
@@ -748,13 +750,13 @@ class CatalogFragmentFeed : Fragment() {
       if (isRoot) {
         when (this.parameters.ownership) {
           is OwnedByAccount -> showAccountPickerAction()
-          is CollectedFromAccounts -> resetHomeAction()
+          is CollectedFromAccounts -> resetHomeAction(isVisible = false)
         }
       } else {
-        resetHomeAction()
+        resetHomeAction(isVisible = true)
       }
     } catch (e: Exception) {
-      resetHomeAction()
+      resetHomeAction(isVisible = true)
     }
   }
 
