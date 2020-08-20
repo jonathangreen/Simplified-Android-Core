@@ -301,7 +301,7 @@ class TabbedNavigationController private constructor(
   override fun openSettingsLicense() {
   }
 
-  override fun openSettingsVersion() {
+  override fun openSettingsDebug() {
     this.navigator.addFragment(
       fragment = SettingsFragmentDebug(),
       tab = R.id.tabSettings

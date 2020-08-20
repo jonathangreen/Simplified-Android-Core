@@ -156,7 +156,7 @@ class SettingsFragmentMain : PreferenceFragmentCompat() {
 
   private fun configureDebug(preference: Preference) {
     preference.setOnPreferenceClickListener {
-      this.navigationController.openSettingsVersion()
+      this.navigationController.openSettingsDebug()
       true
     }
 

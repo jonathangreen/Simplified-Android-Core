@@ -177,6 +177,6 @@ class SettingsFragmentMainTest :
       .perform(ViewActions.click())
 
     Mockito.verify(navigation, Times(1))
-      .openSettingsVersion()
+      .openSettingsDebug()
   }
 }

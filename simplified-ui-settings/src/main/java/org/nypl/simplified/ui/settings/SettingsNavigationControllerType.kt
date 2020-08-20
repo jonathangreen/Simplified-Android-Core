@@ -47,10 +47,10 @@ interface SettingsNavigationControllerType : NavigationControllerType,
   fun openSettingsLicense()
 
   /**
-   * The settings screen wants to open the version screen.
+   * The settings screen wants to open the "debug options" section.
    */
 
-  fun openSettingsVersion()
+  fun openSettingsDebug()
 
   /**
    * The settings screen wants to open the custom OPDS creation form.
