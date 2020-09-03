@@ -30,4 +30,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
     - name: Build with Gradle
-      run: ./gradlew clean ktlint test assembleDebug
+      run: > 
+        ./gradlew 
+        clean ktlint test assembleDebug 
+        -Dorg.gradle.internal.publish.checksums.insecure=true  
