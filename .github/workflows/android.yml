@@ -66,8 +66,16 @@ jobs:
         with:
           name: vanilla-debug
       - name: Upload to browserstack
-        uses: actions/upload-app-browserstack@v1 
-        with: 
-          app-path: "*-vanilla-debug.apk"
-          browserstack-username: ${{ secrets.BROWSERSTACK_USERNAME }} 
-          browserstack-accesskey: ${{ secrets.BROWSERSTACK_ACCESSKEY }}
+        run: |
+          APP_UPLOAD_RESPONSE=$(curl -u "${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESSKEY }}" -X POST https://api-cloud.browserstack.com/app-automate/upload -F file=@*-vanilla-debug.apk)
+          APP_ID=$(echo $APP_UPLOAD_RESPONSE | jq -r ".app_url")
+          if [ $APP_ID != null ]; then
+            echo "Apk uploaded to BrowserStack with app id : ",$APP_ID;
+            echo "export BROWSERSTACK_APP_ID=$APP_ID" >> $BASH_ENV;
+            source $BASH_ENV;
+            echo "Setting value of BROWSERSTACK_APP_ID in environment variables to  ",$APP_ID;
+          else
+            UPLOAD_ERROR_MESSAGE=$(echo $APP_UPLOAD_RESPONSE | jq -r ".error")
+            echo "App upload failed, reason : ",$UPLOAD_ERROR_MESSAGE
+            exit 1;
+          fi
