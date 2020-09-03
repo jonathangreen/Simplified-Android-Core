@@ -9,9 +9,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: set up JDK 1.8
@@ -58,3 +56,18 @@ jobs:
         name: vanillaWithProfiles-debug
         path: 
           simplified-app-vanilla/build/outputs/apk/vanillaWithProfiles/debug/*-vanillaWithProfiles-debug.apk
+
+  browserstack:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download vanilla apk
+        uses: actions/download-artifact@v2
+        with:
+          name: vanilla-debug
+      - name: Upload to browserstack
+        uses: actions/upload-app-browserstack@v1 
+        with: 
+          app-path: "*-vanilla-debug.apk"
+          browserstack-username: ${{ secrets.BROWSERSTACK_USERNAME }} 
+          browserstack-accesskey: ${{ secrets.BROWSERSTACK_ACCESSKEY }}
