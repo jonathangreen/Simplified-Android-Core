@@ -39,20 +39,20 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
-    - name: Lint
-      run: ./gradlew clean ktlint
     - name: Build
       run: > 
         ./gradlew 
-        test assembleDebug 
+        clean ktlint test assembleDebug 
         -Dorg.gradle.internal.publish.checksums.insecure=true  
-    - uses: actions/upload-artifact@v2
+    - name: Publish vanilla
+      uses: actions/upload-artifact@v2
       if: success()
       with:
         name: vanilla-debug.apk
         path: 
           simplified-app-vanilla/build/outputs/apk/vanilla/debug/*-vanilla-debug.apk
-    - uses: actions/upload-artifact@v2
+    - name: Publish vanillaWithProfiles
+      uses: actions/upload-artifact@v2
       if: success()
       with:
         name: vanillaWithProfiles-debug.apk
