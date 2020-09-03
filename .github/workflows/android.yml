@@ -48,13 +48,13 @@ jobs:
       uses: actions/upload-artifact@v2
       if: success()
       with:
-        name: vanilla-debug.apk
+        name: vanilla-debug
         path: 
           simplified-app-vanilla/build/outputs/apk/vanilla/debug/*-vanilla-debug.apk
     - name: Publish vanillaWithProfiles
       uses: actions/upload-artifact@v2
       if: success()
       with:
-        name: vanillaWithProfiles-debug.apk
+        name: vanillaWithProfiles-debug
         path: 
           simplified-app-vanilla/build/outputs/apk/vanillaWithProfiles/debug/*-vanillaWithProfiles-debug.apk
